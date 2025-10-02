@@ -32,7 +32,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                     // Ensure we’re on the main branch and pull latest changes
-                    bat "git checkout ${BRANCH} || git checkout -b ${BRANCH}"
+                    bat "git checkout ${BRANCH}"
                     bat "git pull https://%GIT_USERNAME%:%GIT_PASSWORD%@${GIT_REPO} ${BRANCH} --rebase"
                     bat """
                         git config --global user.name "mariem"
@@ -50,7 +50,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check GitHub token and repository permissions.'
+            echo 'CD pipeline failed. Check GitHub token, repository permissions, or branch conflicts.'
         }
     }
 }
