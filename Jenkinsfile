@@ -30,9 +30,8 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    // Ensure we’re on the main branch and pull latest changes
-                    bat "git checkout ${BRANCH}"
+                withCredentials([usernamePassword(credentialsId: 'githubCD', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    // Sync with remote main branch
                     bat "git pull https://%GIT_USERNAME%:%GIT_PASSWORD%@${GIT_REPO} ${BRANCH} --rebase"
                     bat """
                         git config --global user.name "mariem"
