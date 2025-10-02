@@ -30,18 +30,15 @@ pipeline {
 
         stage('Commit & Sync Changes') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'githubCD', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    // Stage and commit local changes first
+                withCredentials([string(credentialsId: 'githubCD', variable: 'GIT_TOKEN')]) {
+                    // Sync with remote and commit local changes
+                    bat "git pull https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH} --rebase"
                     bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "🔄 Temporary commit: Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
-                    """
-                    // Sync with remote and push using environment variables
-                    bat "git pull https://%%GIT_USERNAME%%:%%GIT_PASSWORD%%@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH} --rebase"
-                    bat """
-                        git push https://%%GIT_USERNAME%%:%%GIT_PASSWORD%%@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
+                        git commit -m "🔄 Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git push https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
                     """
                 }
             }
