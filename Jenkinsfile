@@ -17,7 +17,10 @@ pipeline {
                         def valuesFile = "${chart}/values.yaml"
                         if (fileExists(valuesFile)) {
                             echo "Updating image tag in ${valuesFile}"
-                            sh "sed -i 's|tag: .*|tag: \"${params.IMAGE_TAG}\"|' ${valuesFile}"
+                            // Use PowerShell to replace tag (Windows-compatible)
+                            bat """
+                                powershell -Command "(Get-Content ${valuesFile}) -replace 'tag: .*', 'tag: \"${params.IMAGE_TAG}\"' | Set-Content ${valuesFile}"
+                            """
                         } else {
                             error("File not found: ${valuesFile}")
                         }
@@ -29,12 +32,12 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    sh """
+                    bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
-                        git add backend-chart/values.yaml frontend-chart/values.yaml
-                        git commit -m "🔄 Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
-                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@${GIT_REPO} ${BRANCH}
+                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                        git commit -m "🔄 Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git push https://%GIT_USERNAME%:%GIT_PASSWORD%@${GIT_REPO} ${BRANCH}
                     """
                 }
             }
