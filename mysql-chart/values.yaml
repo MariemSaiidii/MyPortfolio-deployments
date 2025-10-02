@@ -1,0 +1,12 @@
+replicaCount: 1
+image:
+  repository: mysql
+  tag: "8.0"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3306
+env:
+  MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+  MYSQL_DATABASE: "database"
+  MYSQL_ROOT_HOST: "%"

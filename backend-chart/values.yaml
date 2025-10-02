@@ -1,0 +1,12 @@
+replicaCount: 2
+image:
+  repository: mariem631/portfolio-app-cicd-pipeline-backend
+  tag: "latest"  # Updated dynamically by CD pipeline
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 8080
+env:
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/database
+  SPRING_DATASOURCE_USERNAME: root
+  SPRING_DATASOURCE_PASSWORD: ""
