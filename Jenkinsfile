@@ -38,8 +38,8 @@ pipeline {
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
                         git commit -m "🔄 Temporary commit: Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
                     """
-                    // Sync with remote and push
-                    bat "git pull https://%GIT_USERNAME%:%GIT_PASSWORD%@${GIT_REPO} ${BRANCH} --rebase"
+                    // Sync with remote and push with corrected URL
+                    bat "git pull https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH} --rebase"
                     bat """
                         git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
                     """
@@ -52,7 +52,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check GitHub token, repository permissions, or branch conflicts.'
+            echo 'CD pipeline failed. Check GitHub token, repository permissions, or URL configuration.'
         }
     }
 }
