@@ -31,8 +31,9 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    // Ensure we’re on the main branch
+                    // Ensure we’re on the main branch and pull latest changes
                     bat "git checkout ${BRANCH} || git checkout -b ${BRANCH}"
+                    bat "git pull https://%GIT_USERNAME%:%GIT_PASSWORD%@${GIT_REPO} ${BRANCH} --rebase"
                     bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
@@ -49,7 +50,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed.'
+            echo 'CD pipeline failed. Check GitHub token and repository permissions.'
         }
     }
 }
