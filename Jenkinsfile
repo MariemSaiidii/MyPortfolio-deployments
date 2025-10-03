@@ -11,17 +11,10 @@ pipeline {
     }
 
     stages {
-        stage('Checkout SCM') {
-            steps {
-                // Checkout the repository using SSH
-                git branch: "${BRANCH}", url: "${GIT_REPO}"
-            }
-        }
-
         stage('Update Helm Values') {
             steps {
                 script {
-                    def charts = ['backend-chart', 'frontend-chart'] // Add more charts if needed
+                    def charts = ['backend-chart', 'frontend-chart']
 
                     charts.each { chart ->
                         def valuesFile = "${chart}/values.yaml"
@@ -40,15 +33,27 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                bat """
-                    git config --global user.name "mariem"
-                    git config --global user.email "saidi.mariem@esprit.tn"
+                script {
+                    // Ensure branch is checked out
+                    bat """
+                        git fetch origin ${BRANCH}
+                        git checkout ${BRANCH} || git checkout -b ${BRANCH}
+                        git reset --hard origin/${BRANCH}
+                    """
 
-                    git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                    git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                    // Configure Git user
+                    bat """
+                        git config --global user.name "mariem"
+                        git config --global user.email "saidi.mariem@esprit.tn"
+                    """
 
-                    git push origin ${BRANCH}
-                """
+                    // Commit and push changes via SSH
+                    bat """
+                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git push origin ${BRANCH}
+                    """
+                }
             }
         }
     }
@@ -58,7 +63,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check SSH access and branch configuration.'
+            echo 'CD pipeline failed. Check that the Jenkins agent has SSH access to GitHub and the branch is correct.'
         }
     }
 }
