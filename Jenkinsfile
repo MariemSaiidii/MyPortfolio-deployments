@@ -11,6 +11,18 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout Repo') {
+            steps {
+                git branch: "${BRANCH}", url: "${GIT_REPO}", credentialsId: 'githubssh'
+            }
+        }
+
         stage('Update Helm Values') {
             steps {
                 script {
@@ -34,20 +46,13 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    // Clean workspace: ensure branch and sync with remote
-                    bat """
-                        git fetch origin ${BRANCH}
-                        git checkout ${BRANCH} || git checkout -b ${BRANCH}
-                        git reset --hard origin/${BRANCH}
-                    """
-
                     // Configure Git user
                     bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
                     """
 
-                    // Commit & push new changes
+                    // Add, commit, and push changes via SSH
                     bat """
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
                         git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
@@ -60,10 +65,10 @@ pipeline {
 
     post {
         success {
-            echo 'CD pipeline executed successfully.'
+            echo 'CD pipeline executed successfully. Changes should now be visible on GitHub.'
         }
         failure {
-            echo 'CD pipeline failed. Check SSH access to GitHub and branch configuration.'
+            echo 'CD pipeline failed. Check SSH access, branch, or file paths.'
         }
     }
 }
