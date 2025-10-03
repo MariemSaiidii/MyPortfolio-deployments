@@ -42,7 +42,7 @@ pipeline {
                     """
                     // Sync with remote and push with timeout
                     timeout(time: 5, unit: 'MINUTES') {
-                        bat "git pull --rebase origin ${BRANCH}"
+                        
                         bat "git push origin ${BRANCH}"
                     }
                 }
