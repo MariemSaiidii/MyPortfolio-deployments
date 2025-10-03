@@ -33,26 +33,17 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'githubtoken', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    script {
-                        // Configure Git user
-                        bat """
-                            git config --global user.name "mariem"
-                            git config --global user.email "saidi.mariem@esprit.tn"
-                        """
+withCredentials([usernamePassword(credentialsId: 'githubtokenn', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+    bat """
+        git config --global user.name "mariem"
+        git config --global user.email "saidi.mariem@esprit.tn"
 
-                        // Commit changes
-                        bat """
-                            git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                            git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
-                        """
+        git add backend-chart\\values.yaml frontend-chart\\values.yaml
+        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
 
-                        // Push changes using embedded credentials
-                        bat """
-                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
-                        """
-                    }
-                }
+        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
+    """
+}
             }
         }
     }
