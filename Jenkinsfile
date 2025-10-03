@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
+        GIT_REPO = 'git@github.com:MariemSaiidii/MyPortfolio-deployments.git'
         BRANCH = 'main'
     }
 
@@ -33,26 +33,26 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
-                    script {
-                        // Configure Git user
-                        bat """
-                            git config --global user.name "mariem"
-                            git config --global user.email "saidi.mariem@esprit.tn"
-                        """
+                script {
+                    // Ensure branch is checked out
+                    bat """
+                        git fetch origin ${BRANCH}
+                        git checkout ${BRANCH} || git checkout -b ${BRANCH}
+                        git reset --hard origin/${BRANCH}
+                    """
 
-                        // Set remote URL to use token
-                        bat """
-                            git remote set-url origin https://MariemSaiidii:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
-                        """
+                    // Configure Git user
+                    bat """
+                        git config --global user.name "mariem"
+                        git config --global user.email "saidi.mariem@esprit.tn"
+                    """
 
-                        // Commit and push changes
-                        bat """
-                            git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                            git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
-                            git push origin ${BRANCH}
-                        """
-                    }
+                    // Commit and push changes via SSH
+                    bat """
+                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git push origin ${BRANCH}
+                    """
                 }
             }
         }
@@ -63,7 +63,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check GitHub token, repository permissions, or URL configuration.'
+            echo 'CD pipeline failed. Check that the Jenkins agent has SSH access to GitHub and the branch is correct.'
         }
     }
 }
