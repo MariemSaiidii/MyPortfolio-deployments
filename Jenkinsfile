@@ -19,7 +19,9 @@ pipeline {
 
         stage('Checkout Repo') {
             steps {
-                git branch: 'main', url: 'git@github.com:MariemSaiidii/MyPortfolio-deployments.git', credentialsId: 'github-ssh'
+                git branch: "${BRANCH}",
+                    credentialsId: 'github-ssh', // Your Jenkins SSH credential ID
+                    url: "${GIT_REPO}"
             }
         }
 
@@ -27,7 +29,6 @@ pipeline {
             steps {
                 script {
                     def charts = ['backend-chart', 'frontend-chart']
-
                     charts.each { chart ->
                         def valuesFile = "${chart}/values.yaml"
                         if (fileExists(valuesFile)) {
@@ -52,12 +53,14 @@ pipeline {
                         git config --global user.email "saidi.mariem@esprit.tn"
                     """
 
-                    // Add, commit, and push changes via SSH
-                    bat """
-                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
-                        git push origin ${BRANCH}
-                    """
+                    // Use SSH Agent to push
+                    sshagent(['github-ssh']) { // Your Jenkins SSH credential ID
+                        bat """
+                            git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                            git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                            git push origin ${BRANCH}
+                        """
+                    }
                 }
             }
         }
@@ -65,7 +68,7 @@ pipeline {
 
     post {
         success {
-            echo 'CD pipeline executed successfully. Changes should now be visible on GitHub.'
+            echo 'CD pipeline executed successfully.'
         }
         failure {
             echo 'CD pipeline failed. Check SSH access, branch, or file paths.'
