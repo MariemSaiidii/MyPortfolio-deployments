@@ -34,12 +34,7 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    // Ensure branch is checked out
-                    bat """
-                        git fetch origin ${BRANCH}
-                        git checkout ${BRANCH} || git checkout -b ${BRANCH}
-                        git reset --hard origin/${BRANCH}
-                    """
+                   
 
                     // Configure Git user
                     bat """
