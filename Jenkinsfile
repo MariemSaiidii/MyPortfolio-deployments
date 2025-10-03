@@ -31,14 +31,16 @@ pipeline {
         stage('Commit & Sync Changes') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
-                    bat "git pull https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH} --rebase"
+                    // Stage and commit local changes first
                     bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
                         git commit -m \"🔄 Update Helm image tags to ${params.IMAGE_TAG}\" || exit 0
-                        git push https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
                     """
+                    // Sync with remote and push
+                    bat 'git pull --rebase'
+                    bat 'git push'
                 }
             }
         }
