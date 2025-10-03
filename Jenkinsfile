@@ -22,12 +22,12 @@ pipeline {
                 script {
                     if (fileExists('backend-chart/values.yaml')) {
                         echo 'Updating image tag in backend-chart/values.yaml'
-                        bat 'powershell -Command "(Get-Content backend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\’ | Set-Content backend-chart/values.yaml"'
+                        bat 'powershell -Command "(Get-Content backend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\ | Set-Content backend-chart/values.yaml"'
                     }
 
                     if (fileExists('frontend-chart/values.yaml')) {
                         echo 'Updating image tag in frontend-chart/values.yaml'
-                        bat 'powershell -Command "(Get-Content frontend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\’ | Set-Content frontend-chart/values.yaml"'
+                        bat 'powershell -Command "(Get-Content frontend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\ | Set-Content frontend-chart/values.yaml"'
                     }
                 }
             }
