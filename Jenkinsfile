@@ -34,11 +34,11 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    // Checkout the branch safely
+                    // Clean workspace: ensure branch and sync with remote
                     bat """
                         git fetch origin ${BRANCH}
                         git checkout ${BRANCH} || git checkout -b ${BRANCH}
-                        git pull origin ${BRANCH} --rebase
+                        git reset --hard origin/${BRANCH}
                     """
 
                     // Configure Git user
@@ -47,14 +47,10 @@ pipeline {
                         git config --global user.email "saidi.mariem@esprit.tn"
                     """
 
-                    // Commit changes only if there are any
+                    // Commit & push new changes
                     bat """
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git diff --cached --quiet || git commit -m "Update Helm image tags to ${params.IMAGE_TAG}"
-                    """
-
-                    // Push changes safely
-                    bat """
+                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
                         git push origin ${BRANCH}
                     """
                 }
@@ -67,7 +63,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check that the Jenkins agent has SSH access to GitHub and the branch is correct.'
+            echo 'CD pipeline failed. Check SSH access to GitHub and branch configuration.'
         }
     }
 }
