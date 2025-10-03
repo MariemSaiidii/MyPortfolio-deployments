@@ -30,7 +30,7 @@ pipeline {
                 }
             }
         }
-sstage('Commit & Push Changes') {
+stage('Commit & Push Changes') {
     steps {
         withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
             script {
