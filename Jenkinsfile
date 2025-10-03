@@ -31,7 +31,7 @@ pipeline {
         stage('Commit & Sync Changes') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
-                    // Ensure the workspace is on the main branch from the start
+                    // Ensure the workspace is on the main branch at the start
                     bat "git checkout ${BRANCH}"
                     // Stage and commit local changes first
                     bat """
