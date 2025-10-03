@@ -31,8 +31,6 @@ pipeline {
         stage('Commit & Sync Changes') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
-                    // Ensure the workspace is on the main branch
-                    bat "git checkout ${BRANCH}"
                     // Stage and commit local changes first
                     bat """
                         git config --global user.name \"mariem\"
@@ -40,11 +38,10 @@ pipeline {
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
                         git commit -m \"🔄 Update Helm image tags to ${params.IMAGE_TAG}\" || exit 0
                     """
+                    // Ensure the workspace is on the main branch after committing
+                    bat "git checkout ${BRANCH}"
                     // Sync with remote and push
                     bat "git pull --rebase origin ${BRANCH}"
-                    bat 'git stash'
-                    bat "git pull --rebase origin ${BRANCH}"
-                    bat 'git stash pop'
                     bat "git push origin ${BRANCH}"
                 }
             }
