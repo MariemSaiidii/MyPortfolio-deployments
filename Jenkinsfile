@@ -32,7 +32,7 @@ pipeline {
         }
 stage('Commit & Push Changes') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'githubtoken', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+        withCredentials([usernamePassword(credentialsId: 'githubtokenn', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
             bat """
                 git config --global user.name "mariem"
                 git config --global user.email "saidi.mariem@esprit.tn"
