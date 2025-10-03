@@ -19,7 +19,7 @@ pipeline {
 
         stage('Checkout Repo') {
             steps {
-                git branch: "${BRANCH}", url: "${GIT_REPO}", credentialsId: 'githubssh'
+                git branch: 'main', url: 'git@github.com:MariemSaiidii/MyPortfolio-deployments.git', credentialsId: 'github-ssh'
             }
         }
 
