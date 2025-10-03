@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     // Validate SSH access
-                    def sshTest = bat(script: "ssh -T git@github.com", returnStatus: true)
+                    def sshTest = bat(script: 'ssh -o StrictHostKeyChecking=no -T git@github.com', returnStatus: true)
                     if (sshTest != 1) {
                         error("SSH test failed! Make sure the Jenkins agent has a valid SSH key configured for GitHub.")
                     }
