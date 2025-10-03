@@ -2,33 +2,53 @@ pipeline {
     agent any
 
     environment {
-        // Use SSH key with forward slashes
-        GIT_SSH_COMMAND = 'ssh -i C:/Users/marie/.ssh/id_ed25519 -o StrictHostKeyChecking=no'
+        // Path to your SSH key
+        GIT_SSH_KEY = "C:\\Users\\marie\\.ssh\\id_ed25519"
+        GIT_USER = "mariem"
+        GIT_EMAIL = "saidi.mariem@esprit.tn"
     }
 
     stages {
-
-        stage('Checkout Repo') {
+        stage('Checkout HTTPS') {
             steps {
-                // Clean before clone if necessary
-                deleteDir()
-                // Clone via SSH (so push will work)
-                bat 'git clone -b main git@github.com:MariemSaiidii/MyPortfolio-deployments.git .'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git',
+                        credentialsId: 'githubtokenn'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout SSH Repo') {
+            steps {
+                // Use the SSH key
+                bat """
+                    set GIT_SSH_COMMAND=ssh -i ${GIT_SSH_KEY} -o StrictHostKeyChecking=no
+                    git clone -b main git@github.com:MariemSaiidii/MyPortfolio-deployments.git .
+                """
             }
         }
 
         stage('Update Helm Values') {
             steps {
                 script {
-                    if (fileExists('backend-chart/values.yaml')) {
-                        echo 'Updating image tag in backend-chart/values.yaml'
-                        bat 'powershell -Command "(Get-Content backend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\ | Set-Content backend-chart/values.yaml"'
-                    }
-
-                    if (fileExists('frontend-chart/values.yaml')) {
-                        echo 'Updating image tag in frontend-chart/values.yaml'
-                        bat 'powershell -Command "(Get-Content frontend-chart/values.yaml) -replace \'tag: .*\', \'tag: \\"latestjkl\\"\ | Set-Content frontend-chart/values.yaml"'
-                    }
+                    // Update backend-chart
+                    bat '''
+                    powershell -Command "(Get-Content backend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content backend-chart/values.yaml"
+                    '''
+                    // Update frontend-chart
+                    bat '''
+                    powershell -Command "(Get-Content frontend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content frontend-chart/values.yaml"
+                    '''
                 }
             }
         }
@@ -36,23 +56,28 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    bat 'git config user.name "mariem"'
-                    bat 'git config user.email "saidi.mariem@esprit.tn"'
+                    // Set Git config
+                    bat "git config --global user.name \"${GIT_USER}\""
+                    bat "git config --global user.email \"${GIT_EMAIL}\""
 
-                    bat 'git add .'
-                    bat 'git commit -m "Update image tags via Jenkins pipeline"'
-                    bat 'git push origin main'
+                    // Add, commit, and push
+                    bat "git add ."
+                    bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
+                    bat """
+                        set GIT_SSH_COMMAND=ssh -i ${GIT_SSH_KEY} -o StrictHostKeyChecking=no
+                        git push origin main
+                    """
                 }
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
         failure {
-            echo 'CD pipeline failed. Check SSH access, branch, or file paths.'
+            echo "CD pipeline failed. Check SSH access, branch, or file paths."
+        }
+        success {
+            echo "CD pipeline completed successfully!"
         }
     }
 }
