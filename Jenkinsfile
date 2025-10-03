@@ -34,11 +34,11 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    // Ensure branch is checked out
+                    // Checkout the branch safely
                     bat """
                         git fetch origin ${BRANCH}
                         git checkout ${BRANCH} || git checkout -b ${BRANCH}
-                        git reset --hard origin/${BRANCH}
+                        git pull origin ${BRANCH} --rebase
                     """
 
                     // Configure Git user
@@ -47,10 +47,14 @@ pipeline {
                         git config --global user.email "saidi.mariem@esprit.tn"
                     """
 
-                    // Commit and push changes via SSH
+                    // Commit changes only if there are any
                     bat """
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git diff --cached --quiet || git commit -m "Update Helm image tags to ${params.IMAGE_TAG}"
+                    """
+
+                    // Push changes safely
+                    bat """
                         git push origin ${BRANCH}
                     """
                 }
