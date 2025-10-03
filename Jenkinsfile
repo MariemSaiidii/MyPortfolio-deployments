@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
+        GIT_REPO = 'git@github.com:MariemSaiidii/MyPortfolio-deployments.git'
         BRANCH = 'main'
     }
 
@@ -33,19 +33,16 @@ pipeline {
 
         stage('Commit & Sync Changes') {
             steps {
-                withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
-                    bat """
-                        git config --global user.name "mariem"
-                        git config --global user.email "saidi.mariem@esprit.tn"
+                bat """
+                    git config --global user.name "mariem"
+                    git config --global user.email "saidi.mariem@esprit.tn"
 
-                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                    git checkout ${BRANCH}
+                    git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                    git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
 
-                        REM Set remote URL using Jenkins env variable properly
-                        git remote set-url origin https://mariem:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
-                        git push origin HEAD:${BRANCH}
-                    """
-                }
+                    git push origin HEAD:${BRANCH}
+                """
             }
         }
     }
@@ -55,7 +52,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check GitHub token, repository permissions, or URL configuration.'
+            echo 'CD pipeline failed. Make sure the Jenkins agent has SSH access to GitHub.'
         }
     }
 }
