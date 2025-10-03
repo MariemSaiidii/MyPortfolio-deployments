@@ -15,7 +15,6 @@ pipeline {
             steps {
                 script {
                     def charts = ['backend-chart', 'frontend-chart']
-
                     charts.each { chart ->
                         def valuesFile = "${chart}/values.yaml"
                         if (fileExists(valuesFile)) {
@@ -30,29 +29,36 @@ pipeline {
                 }
             }
         }
-stage('Commit & Push Changes') {
-    steps {
-        withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
-            script {
-                // Configure Git
-                bat """
-                    git config --global user.name "mariem"
-                    git config --global user.email "saidi.mariem@esprit.tn"
-                """
 
-                // Set GIT_ASKPASS helper to provide the token
-                bat """
-                    set GIT_ASKPASS=echo
-                    set GIT_USERNAME=MariemSaiidii
-                    set GIT_PASSWORD=${GIT_TOKEN}
-                    git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                    git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
-                    git push https://github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
-                """
+        stage('Commit & Push Changes') {
+            steps {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+                    script {
+                        // Configure Git user globally
+                        bat """
+                            git config --global user.name "mariem"
+                            git config --global user.email "saidi.mariem@esprit.tn"
+                        """
+
+                        // Temporarily set remote URL with token
+                        bat """
+                            git remote set-url origin https://MariemSaiidii:%GIT_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git
+                        """
+
+                        // Commit changes
+                        bat """
+                            git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                            git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
+                        """
+
+                        // Push to remote branch
+                        bat """
+                            git push origin ${BRANCH}
+                        """
+                    }
+                }
             }
         }
-    }
-}
     }
 
     post {
