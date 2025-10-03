@@ -30,12 +30,9 @@ pipeline {
                 }
             }
         }
-
-        stage('Commit & Push Changes') {
-            steps {
-                stage('Commit & Push Changes') {
+stage('Commit & Push Changes') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'githubtokenn', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+        withCredentials([usernamePassword(credentialsId: 'githubtoken', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
             bat """
                 git config --global user.name "mariem"
                 git config --global user.email "saidi.mariem@esprit.tn"
@@ -48,8 +45,6 @@ pipeline {
         }
     }
 }
-            }
-        }
     }
 
     post {
