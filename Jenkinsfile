@@ -11,7 +11,7 @@ pipeline {
         stage('Update Helm Values') {
             steps {
                 script {
-                    def charts = ['backend-chart', 'frontend-chart'] // MySQL tag remains static
+                    def charts = ['backend-chart', 'frontend-chart'] // Adjust if more charts exist
 
                     charts.each { chart ->
                         def valuesFile = "${chart}/values.yaml"
@@ -30,14 +30,13 @@ pipeline {
 
         stage('Commit & Sync Changes') {
             steps {
-                withCredentials([string(credentialsId: 'githubCD', variable: 'GIT_TOKEN')]) {
-                    // Sync with remote and commit local changes
+                withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
                     bat "git pull https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH} --rebase"
                     bat """
                         git config --global user.name "mariem"
                         git config --global user.email "saidi.mariem@esprit.tn"
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "🔄 Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git commit -m \"🔄 Update Helm image tags to ${params.IMAGE_TAG}\" || exit 0
                         git push https://${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
                     """
                 }
