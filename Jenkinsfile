@@ -39,9 +39,11 @@ pipeline {
                         git config --global user.email "saidi.mariem@esprit.tn"
 
                         git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "🔄 Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
+                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
 
-                        git push https://mariem:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git HEAD:${BRANCH}
+                        REM Set remote URL with token (use Windows env var %GIT_TOKEN%)
+                        git remote set-url origin https://mariem:%GIT_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git
+                        git push origin HEAD:%BRANCH%
                     """
                 }
             }
