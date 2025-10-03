@@ -33,7 +33,7 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
                     script {
                         // Configure Git user
                         bat """
@@ -43,7 +43,7 @@ pipeline {
 
                         // Set remote URL to use token
                         bat """
-                            git remote set-url origin https://mariem:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
+                            git remote set-url origin https://MariemSaiidii:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
                         """
 
                         // Commit and push changes
