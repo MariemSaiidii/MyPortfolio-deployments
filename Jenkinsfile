@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'git@github.com:MariemSaiidii/MyPortfolio-deployments.git'
+        GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
         BRANCH = 'main'
     }
 
@@ -33,21 +33,26 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                script {
-                   
+                withCredentials([string(credentialsId: 'github', variable: 'GIT_TOKEN')]) {
+                    script {
+                        // Configure Git user
+                        bat """
+                            git config --global user.name "mariem"
+                            git config --global user.email "saidi.mariem@esprit.tn"
+                        """
 
-                    // Configure Git user
-                    bat """
-                        git config --global user.name "mariem"
-                        git config --global user.email "saidi.mariem@esprit.tn"
-                    """
+                        // Set remote URL to use token
+                        bat """
+                            git remote set-url origin https://mariem:${GIT_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
+                        """
 
-                    // Commit and push changes via SSH
-                    bat """
-                        git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                        git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || exit 0
-                        git push origin ${BRANCH}
-                    """
+                        // Commit and push changes
+                        bat """
+                            git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                            git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
+                            git push origin ${BRANCH}
+                        """
+                    }
                 }
             }
         }
@@ -58,7 +63,7 @@ pipeline {
             echo 'CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check that the Jenkins agent has SSH access to GitHub and the branch is correct.'
+            echo 'CD pipeline failed. Check GitHub token, repository permissions, or URL configuration.'
         }
     }
 }
