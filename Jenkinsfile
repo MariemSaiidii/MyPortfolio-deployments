@@ -30,18 +30,26 @@ pipeline {
                 }
             }
         }
-stage('Commit & Push Changes') {
+sstage('Commit & Push Changes') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'githubtokenn', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-            bat """
-                git config --global user.name "mariem"
-                git config --global user.email "saidi.mariem@esprit.tn"
+        withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+            script {
+                // Configure Git
+                bat """
+                    git config --global user.name "mariem"
+                    git config --global user.email "saidi.mariem@esprit.tn"
+                """
 
-                git add backend-chart\\values.yaml frontend-chart\\values.yaml
-                git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
-
-                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
-            """
+                // Set GIT_ASKPASS helper to provide the token
+                bat """
+                    set GIT_ASKPASS=echo
+                    set GIT_USERNAME=MariemSaiidii
+                    set GIT_PASSWORD=${GIT_TOKEN}
+                    git add backend-chart\\values.yaml frontend-chart\\values.yaml
+                    git commit -m "Update Helm image tags to ${params.IMAGE_TAG}" || echo "No changes to commit"
+                    git push https://github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
+                """
+            }
         }
     }
 }
