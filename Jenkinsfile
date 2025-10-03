@@ -42,6 +42,9 @@ pipeline {
                     """
                     // Sync with remote and push
                     bat "git pull --rebase origin ${BRANCH}"
+                    bat 'git stash'
+                    bat "git pull --rebase origin ${BRANCH}"
+                    bat 'git stash pop'
                     bat "git push origin ${BRANCH}"
                 }
             }
