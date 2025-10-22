@@ -45,9 +45,9 @@ pipeline {
                     // Add, commit, and push changes
                     bat "git add ."
                     bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-                    withCredentials([usernamePassword(credentialsId: 'Token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        bat "git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
-                    }
+                   withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
+    bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
+}
                 }
             }
         }
