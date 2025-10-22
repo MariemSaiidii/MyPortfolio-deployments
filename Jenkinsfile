@@ -2,21 +2,20 @@ pipeline {
     agent any
 
     environment {
-        GIT_USER = "MariemSaiidii"
+        GIT_USER = "mariem"
         GIT_EMAIL = "mariem.saiidi@gmail.com"
-        GITHUB_TOKEN = credentials('githubtoken') // Jenkins secret text with your PAT
-        REPO_URL = "https://github.com/MariemSaiidii/MyPortfolio-deployments.git"
     }
 
     stages {
         stage('Checkout Repo') {
             steps {
-                // Checkout using HTTPS + PAT
-                checkout([$class: 'GitSCM',
+                // Checkout using Jenkins token
+                checkout([
+                    $class: 'GitSCM',
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[
-                        url: "${REPO_URL}",
-                        credentialsId: 'githubtoken'
+                        url: 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git',
+                        credentialsId: 'Token'
                     ]]
                 ])
             }
@@ -46,18 +45,18 @@ pipeline {
         stage('Commit & Push Changes') {
             steps {
                 script {
-                    // Configure Git
+                    // Set Git config
                     bat "git config --global user.name \"${GIT_USER}\""
                     bat "git config --global user.email \"${GIT_EMAIL}\""
 
-                    // Commit changes
+                    // Add, commit
                     bat "git add ."
                     bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
 
-                    // Push using HTTPS + PAT
-                    bat """
-                        git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git main
-                    """
+                    // Push using token
+                    withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
+                        bat "git push https://mariem:${GITHUB_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
+                    }
                 }
             }
         }
