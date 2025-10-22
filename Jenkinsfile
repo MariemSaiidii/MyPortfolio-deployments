@@ -31,27 +31,25 @@ pipeline {
             }
         }
 
-        stage('Commit & Push Changes') {
-            steps {
-                script {
-                    // Make sure we are on main branch
-                    bat "git checkout main"
+       stage('Commit & Push Changes') {
+    steps {
+        script {
+            // Set Git user info
+            bat "git config --global user.name \"${GIT_USER}\""
+            bat "git config --global user.email \"${GIT_EMAIL}\""
 
-                    // Set Git user info
-                    bat "git config --global user.name \"${GIT_USER}\""
-                    bat "git config --global user.email \"${GIT_EMAIL}\""
+            // Add & commit changes
+            bat "git add ."
+            bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
 
-                    // Add & commit changes
-                    bat "git add ."
-                    bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-
-                    // Use the Token credential for HTTPS push
-                    withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
-                        bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
-                    }
-                }
+            // Push changes with Token
+            withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
+                bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
             }
         }
+    }
+}
+
     }
 
     post {
