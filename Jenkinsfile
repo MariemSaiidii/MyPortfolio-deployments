@@ -9,7 +9,6 @@ pipeline {
     stages {
         stage('Checkout Repo') {
             steps {
-                // Checkout using Jenkins token
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: 'main']],
@@ -18,12 +17,6 @@ pipeline {
                         credentialsId: 'Token'
                     ]]
                 ])
-            }
-        }
-
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()
             }
         }
 
@@ -49,13 +42,11 @@ pipeline {
                     bat "git config --global user.name \"${GIT_USER}\""
                     bat "git config --global user.email \"${GIT_EMAIL}\""
 
-                    // Add, commit
+                    // Add, commit, and push changes
                     bat "git add ."
                     bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-
-                    // Push using token
-                    withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
-                        bat "git push https://mariem:${GITHUB_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
+                    withCredentials([usernamePassword(credentialsId: 'Token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        bat "git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
                     }
                 }
             }
