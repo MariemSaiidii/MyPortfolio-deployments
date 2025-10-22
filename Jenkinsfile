@@ -2,19 +2,25 @@ pipeline {
     agent any
 
     environment {
-        GIT_USER = "MariemSaiidii"
-        GIT_EMAIL = "mariem.saiidi@gmail.com"
+        GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
+        GIT_BRANCH = 'main'
+        GITHUB_USER = 'MariemSaiidii'
+        // Jenkins Secret Text credential containing your token
+        GITHUB_TOKEN_ID = 'Token'
     }
 
     stages {
-        stage('Checkout Repository') {
+
+        stage('Checkout SCM') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'main']],
+                // Checkout main branch using the token
+                checkout([$class: 'GitSCM',
+                    branches: [[name: "refs/heads/${env.GIT_BRANCH}"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[$class: 'CloneOption', shallow: false]],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git',
-                        credentialsId: 'githubtokenn'  // your GitHub HTTPS token for initial checkout
+                        url: env.GIT_REPO,
+                        credentialsId: env.GITHUB_TOKEN_ID
                     ]]
                 ])
             }
@@ -22,42 +28,38 @@ pipeline {
 
         stage('Update Helm Values') {
             steps {
-                script {
-                    bat '''
-                        powershell -Command "(Get-Content backend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content backend-chart/values.yaml"
-                        powershell -Command "(Get-Content frontend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content frontend-chart/values.yaml"
-                    '''
+                bat '''
+                powershell -Command "(Get-Content backend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content backend-chart/values.yaml"
+                powershell -Command "(Get-Content frontend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content frontend-chart/values.yaml"
+                '''
+            }
+        }
+
+        stage('Commit Changes') {
+            steps {
+                bat 'git config user.name "MariemSaiidii"'
+                bat 'git config user.email "mariem.saiidi@gmail.com"'
+                bat 'git add .'
+                bat 'git commit -m "Update Helm image tags" || echo No changes to commit'
+            }
+        }
+
+        stage('Push Changes') {
+            steps {
+                // Use Jenkins secret token for push
+                withCredentials([string(credentialsId: env.GITHUB_TOKEN_ID, variable: 'GITHUB_TOKEN')]) {
+                    bat 'git push https://%GITHUB_USER%:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main'
                 }
             }
         }
-
-       stage('Commit & Push Changes') {
-    steps {
-        script {
-            // Set Git user info
-            bat "git config --global user.name \"${GIT_USER}\""
-            bat "git config --global user.email \"${GIT_EMAIL}\""
-
-            // Add & commit changes
-            bat "git add ."
-            bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-
-            // Push changes with Token
-            withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
-                bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
-            }
-        }
-    }
-}
-
     }
 
     post {
         success {
-            echo "CD pipeline completed successfully!"
+            echo 'CD pipeline succeeded!'
         }
         failure {
-            echo "CD pipeline failed. Check token permissions, branch, or file paths."
+            echo 'CD pipeline failed. Check token permissions, branch, or file paths.'
         }
     }
 }
