@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_USER = "mariem"
+        GIT_USER = "MariemSaiidii"
         GIT_EMAIL = "mariem.saiidi@gmail.com"
     }
 
