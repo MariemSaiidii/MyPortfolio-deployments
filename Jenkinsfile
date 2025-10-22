@@ -35,22 +35,27 @@ pipeline {
             }
         }
 
-        stage('Commit & Push Changes') {
-            steps {
-                script {
-                    // Set Git config
-                    bat "git config --global user.name \"${GIT_USER}\""
-                    bat "git config --global user.email \"${GIT_EMAIL}\""
+  stage('Commit & Push Changes') {
+    steps {
+        script {
+            bat "git checkout main"  // ensure we are on main branch
 
-                    // Add, commit, and push changes
-                    bat "git add ."
-                    bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-                   withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
-    bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
-}
-                }
+            // Git config
+            bat "git config --global user.name \"MariemSaiidii\""
+            bat "git config --global user.email \"mariem.saiidi@gmail.com\""
+
+            // Add, commit
+            bat "git add ."
+            bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
+
+            // Push using token
+            withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
+                bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
             }
         }
+    }
+}
+
     }
 
     post {
