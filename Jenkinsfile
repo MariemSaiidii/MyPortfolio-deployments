@@ -3,52 +3,43 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
-        GIT_BRANCH = 'main'
-        GITHUB_USER = 'MariemSaiidii'
-        // Jenkins Secret Text credential containing your token
-        GITHUB_TOKEN_ID = 'Token'
+        BRANCH = 'main'
+        IMAGE_TAG = 'latestjkl'
     }
 
     stages {
-
-        stage('Checkout SCM') {
+        stage('Checkout Code') {
             steps {
-                // Checkout main branch using the token
-                checkout([$class: 'GitSCM',
-                    branches: [[name: "refs/heads/${env.GIT_BRANCH}"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'CloneOption', shallow: false]],
-                    userRemoteConfigs: [[
-                        url: env.GIT_REPO,
-                        credentialsId: env.GITHUB_TOKEN_ID
-                    ]]
-                ])
+                git branch: "${BRANCH}", credentialsId: 'githubtokenn', url: "${GIT_REPO}"
             }
         }
 
         stage('Update Helm Values') {
             steps {
-                bat '''
-                powershell -Command "(Get-Content backend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content backend-chart/values.yaml"
-                powershell -Command "(Get-Content frontend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content frontend-chart/values.yaml"
-                '''
+                script {
+                    def files = ['backend-chart/values.yaml', 'frontend-chart/values.yaml']
+                    files.each { file ->
+                        if (fileExists(file)) {
+                            echo "Updating image tag in ${file}"
+                            powershell "(Get-Content ${file}) -replace 'tag: .*', 'tag: ${IMAGE_TAG}' | Set-Content ${file}"
+                        } else {
+                            error("File not found: ${file}")
+                        }
+                    }
+                }
             }
         }
 
-        stage('Commit Changes') {
+        stage('Commit & Push Changes') {
             steps {
-                bat 'git config user.name "MariemSaiidii"'
-                bat 'git config user.email "mariem.saiidi@gmail.com"'
-                bat 'git add .'
-                bat 'git commit -m "Update Helm image tags" || echo No changes to commit'
-            }
-        }
-
-        stage('Push Changes') {
-            steps {
-                // Use Jenkins secret token for push
-                withCredentials([string(credentialsId: env.GITHUB_TOKEN_ID, variable: 'GITHUB_TOKEN')]) {
-                    bat 'git push https://%GITHUB_USER%:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main'
+                withCredentials([usernamePassword(credentialsId: 'Token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    bat """
+                        git config user.name "MariemSaiidii"
+                        git config user.email "mariem.saiidi@gmail.com"
+                        git add backend-chart/values.yaml frontend-chart/values.yaml
+                        git commit -m "🔄 Update Helm image tags to ${IMAGE_TAG}" || echo No changes to commit
+                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
+                    """
                 }
             }
         }
@@ -56,7 +47,7 @@ pipeline {
 
     post {
         success {
-            echo 'CD pipeline succeeded!'
+            echo 'CD pipeline executed successfully.'
         }
         failure {
             echo 'CD pipeline failed. Check token permissions, branch, or file paths.'
