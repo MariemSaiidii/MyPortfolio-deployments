@@ -2,21 +2,20 @@ pipeline {
     agent any
 
     environment {
-        // Path to your SSH key
-        GIT_SSH_KEY = "C:\\Users\\marie\\.ssh\\id_ed25519"
         GIT_USER = "mariem"
-        GIT_EMAIL = "saidi.mariem@esprit.tn"
+        GIT_EMAIL = "mariiemsaiidi@gmail.com"
+        GIT_REPO = "https://github.com/MariemSaiidii/MyPortfolio-deployments.git"
     }
 
     stages {
-        stage('Checkout HTTPS') {
+        stage('Checkout Repository') {
             steps {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git',
-                        credentialsId: 'githubtokenn'
+                        url: "${GIT_REPO}",
+                        credentialsId: 'githubtoken'  // Jenkins secret text
                     ]]
                 ])
             }
@@ -28,25 +27,11 @@ pipeline {
             }
         }
 
-        stage('Checkout SSH Repo') {
-            steps {
-                // Use the SSH key
-                bat """
-                    set GIT_SSH_COMMAND=ssh -i ${GIT_SSH_KEY} -o StrictHostKeyChecking=no
-                    git clone -b main git@github.com:MariemSaiidii/MyPortfolio-deployments.git .
-                """
-            }
-        }
-
         stage('Update Helm Values') {
             steps {
                 script {
-                    // Update backend-chart
                     bat '''
                     powershell -Command "(Get-Content backend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content backend-chart/values.yaml"
-                    '''
-                    // Update frontend-chart
-                    bat '''
                     powershell -Command "(Get-Content frontend-chart/values.yaml) -replace 'tag: .*', 'tag: latestjkl' | Set-Content frontend-chart/values.yaml"
                     '''
                 }
@@ -55,16 +40,15 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                script {
-                    // Set Git config
-                    bat "git config --global user.name \"${GIT_USER}\""
-                    bat "git config --global user.email \"${GIT_EMAIL}\""
-
-                    // Add, commit, and push
-                    bat "git add ."
-                    bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
                     bat """
-                        set GIT_SSH_COMMAND=ssh -i ${GIT_SSH_KEY} -o StrictHostKeyChecking=no
+                        git config --global user.name "${GIT_USER}"
+                        git config --global user.email "${GIT_EMAIL}"
+
+                        git add .
+                        git commit -m "Update Helm image tags" || echo No changes to commit
+                        
+                        git remote set-url origin https://${GIT_USER}:${GITHUB_TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git
                         git push origin main
                     """
                 }
@@ -74,10 +58,10 @@ pipeline {
 
     post {
         failure {
-            echo "CD pipeline failed. Check SSH access, branch, or file paths."
+            echo "❌ CD pipeline failed. Check token permissions or file paths."
         }
         success {
-            echo "CD pipeline completed successfully!"
+            echo "✅ CD pipeline completed successfully using HTTPS + GitHub token!"
         }
     }
 }
