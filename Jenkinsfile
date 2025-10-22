@@ -14,7 +14,7 @@ pipeline {
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git',
-                        credentialsId: 'Token'
+                        credentialsId:'Token'
                     ]]
                 ])
             }
@@ -49,7 +49,7 @@ pipeline {
             bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
 
             // Push using token
-            withCredentials([string(credentialsId: 'Token', variable: 'GITHUB_TOKEN')]) {
+            withCredentials([string(credentialsId:'Token', variable: 'GITHUB_TOKEN')]) {
                 bat "git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main"
             }
         }
