@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout Repo') {
             steps {
                 cleanWs()
-                withCredentials([string(credentialsId: 'githubtokenn', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
                     bat """
                         git config --global user.name "${GIT_USER}"
                         git config --global user.email "${GIT_EMAIL}"
@@ -35,7 +35,7 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([string(credentialsId: 'githubtokenn', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
                     bat '''
                         git add .
                         git commit -m "Update Helm image tags" || echo No changes to commit
