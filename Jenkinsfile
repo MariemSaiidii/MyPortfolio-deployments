@@ -35,21 +35,12 @@ pipeline {
 
 stage('Commit & Push Changes') {
     steps {
-        script {
-            // Set Git config
-            bat "git config --global user.name \"${GIT_USER}\""
-            bat "git config --global user.email \"${GIT_EMAIL}\""
-
-            // Add & commit changes
-            bat "git add ."
-            bat "git commit -m \"Update Helm image tags\" || echo No changes to commit"
-
-            // Push using Jenkins credentials
-            withCredentials([usernamePassword(credentialsId: 'githubtokenn', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                bat """
-                    git push https://%GITHUB_USER%:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main
-                """
-            }
+        withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
+            bat '''
+                git add .
+                git commit -m "Update Helm image tags" || echo No changes to commit
+                git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main
+            '''
         }
     }
 }
