@@ -33,17 +33,18 @@ pipeline {
             }
         }
 
-        stage('Commit & Push Changes') {
-            steps {
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
-                    bat '''
-                        git add .
-                        git commit -m "Update Helm image tags" || echo No changes to commit
-                        git push origin main
-                    '''
-                }
-            }
+stage('Commit & Push Changes') {
+    steps {
+        withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
+            bat '''
+                git add .
+                git commit -m "Update Helm image tags" || echo No changes to commit
+                git push https://MariemSaiidii:%GITHUB_TOKEN%@github.com/MariemSaiidii/MyPortfolio-deployments.git main
+            '''
         }
+    }
+}
+
     }
 
     post {
