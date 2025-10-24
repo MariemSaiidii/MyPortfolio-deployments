@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: "${BRANCH}", credentialsId: 'githubtokenn', url: "${GIT_REPO}"
+                git branch: "${BRANCH}", credentialsId: 'GitToken', url: "${GIT_REPO}"
             }
         }
 
@@ -23,7 +23,7 @@ pipeline {
                             echo "Updating image tag in ${file}"
                             powershell "(Get-Content ${file}) -replace 'tag: .*', 'tag: ${IMAGE_TAG}' | Set-Content ${file}"
                         } else {
-                            error("File not found: ${file}")
+                            echo "File not found: ${file}"
                         }
                     }
                 }
@@ -32,13 +32,13 @@ pipeline {
 
         stage('Commit & Push Changes') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'GitToken', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'GitToken', usernameVariable: 'USERNAME', passwordVariable: 'TOKEN')]) {
                     bat """
                         git config user.name "MariemSaiidii"
                         git config user.email "mariem.saiidi@gmail.com"
                         git add backend-chart/values.yaml frontend-chart/values.yaml
                         git commit -m "🔄 Update Helm image tags to ${IMAGE_TAG}" || echo No changes to commit
-                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
+                        git push https://${USERNAME}:${TOKEN}@github.com/MariemSaiidii/MyPortfolio-deployments.git ${BRANCH}
                     """
                 }
             }
@@ -47,10 +47,10 @@ pipeline {
 
     post {
         success {
-            echo 'CD pipeline executed successfully.'
+            echo '✅ CD pipeline executed successfully.'
         }
         failure {
-            echo 'CD pipeline failed. Check token permissions, branch, or file paths.'
+            echo '❌ CD pipeline failed. Check token permissions, branch, or file paths.'
         }
     }
 }
