@@ -6,8 +6,8 @@ image:
 service:
   type: ClusterIP
   port: 8080
-
-  serviceAccount:
+  
+serviceAccount:
   create: true
   name: ""
   
