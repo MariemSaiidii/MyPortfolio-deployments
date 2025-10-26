@@ -1,16 +1,49 @@
 replicaCount: 2
 image:
   repository: mariem631/portfolio-app-cicd-pipeline-backend
-  tag: "latest"  # Updated dynamically by CD pipeline
+  tag: latest
   pullPolicy: IfNotPresent
 service:
   type: ClusterIP
   port: 8080
+<<<<<<< HEAD
 
 serviceAccount:
   create: true
   name: ""
+=======
+  
+serviceAccount:
+  create: true
+  name: ""
+  
+>>>>>>> 670f62cd72a30aad033c3a3a2e143b6ec7fe63e6
 env:
   SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/database
   SPRING_DATASOURCE_USERNAME: root
   SPRING_DATASOURCE_PASSWORD: ""
+
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+
+# autoscaling settings used by templates/hpa.yaml
+autoscaling:
+  enabled: true            # set true if you want HPA created
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50   # old-style v1 target (keeps template-compatible)
+  # If you prefer autoscaling/v2 metrics, you can leave CPU percentage and/or
+  # add memory percentage below (template already checks for both)
+  targetMemoryUtilizationPercentage: 0
+  
+  deploymentName: backend   # reference the correct deployment

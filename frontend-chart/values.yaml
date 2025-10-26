@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: mariem631/portfolio-app-cicd-pipeline-frontend
-  tag: "latest"  # Updated dynamically by CD pipeline
+  tag: latestjkl
   pullPolicy: IfNotPresent
 service:
   type: LoadBalancer
