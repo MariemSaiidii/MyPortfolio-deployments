@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: mariem631/portfolio-app-cicd-pipeline-backend
-  tag: latest
+  tag: latestjkl
   pullPolicy: IfNotPresent
 service:
   type: ClusterIP
