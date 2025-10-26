@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: mariem631/portfolio-app-cicd-pipeline-frontend
-  tag: latestjkl
+  tag: latest
   pullPolicy: IfNotPresent
 service:
   type: LoadBalancer
