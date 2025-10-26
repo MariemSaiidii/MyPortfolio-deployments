@@ -27,3 +27,15 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
+
+
+# autoscaling settings used by templates/hpa.yaml
+autoscaling:
+  enabled: false              # set true if you want HPA created
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50   # old-style v1 target (keeps template-compatible)
+  # If you prefer autoscaling/v2 metrics, you can leave CPU percentage and/or
+  # add memory percentage below (template already checks for both)
+  targetMemoryUtilizationPercentage: 0
+
