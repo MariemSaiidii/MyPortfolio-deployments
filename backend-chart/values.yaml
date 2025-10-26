@@ -31,7 +31,7 @@ ingress:
 
 # autoscaling settings used by templates/hpa.yaml
 autoscaling:
-  enabled: false              # set true if you want HPA created
+  enabled: true            # set true if you want HPA created
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 50   # old-style v1 target (keeps template-compatible)
