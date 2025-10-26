@@ -6,6 +6,11 @@ image:
 service:
   type: ClusterIP
   port: 8080
+
+  serviceAccount:
+  create: true
+  name: ""
+  
 env:
   SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/database
   SPRING_DATASOURCE_USERNAME: root
