@@ -38,4 +38,5 @@ autoscaling:
   # If you prefer autoscaling/v2 metrics, you can leave CPU percentage and/or
   # add memory percentage below (template already checks for both)
   targetMemoryUtilizationPercentage: 0
-
+  
+  deploymentName: backend   # reference the correct deployment
