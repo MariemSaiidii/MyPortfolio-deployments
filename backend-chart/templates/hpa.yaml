@@ -1,6 +1,10 @@
 {{- if .Values.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
+scaleTargetRef:
+  apiVersion: apps/v1
+   kind: Deployment
+   name: {{ .Values.autoscaling.deploymentName }}
 metadata:
   name: {{ include "..fullname" . }}
   labels:
@@ -29,4 +33,5 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
+  
 {{- end }}
