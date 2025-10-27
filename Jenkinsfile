@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_REPO = 'https://github.com/MariemSaiidii/MyPortfolio-deployments.git'
         BRANCH = 'main'
-        IMAGE_TAG = '1.0.0-test'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
